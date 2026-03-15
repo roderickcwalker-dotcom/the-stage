@@ -32,7 +32,7 @@ export function useSpeechRecognition(): UseSpeechRecognitionReturn {
   } = useReactSpeechRecognition();
 
   const startListening = useCallback(() => {
-    SpeechRecognition.startListening({ continuous: true, language: "en-US" });
+    SpeechRecognition.startListening({ continuous: true, interimResults: true, language: "en-US" });
   }, []);
 
   const stopListening = useCallback(() => {
