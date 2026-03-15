@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
-import { Mic, Square, Loader2, AlertCircle } from "lucide-react";
+import { useState, useCallback, useRef, useEffect } from "react";
+import { Mic, Square, Loader2, AlertCircle, Radio } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMediaRecorder } from "@/hooks/use-media-recorder";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
@@ -12,7 +12,7 @@ import { analyzePacing } from "@/lib/analysis/pacing";
 import type { SpeechScores, FeedbackResult, FillerInstance } from "@/types";
 import { formatDuration } from "@/lib/utils";
 
-export type RecordingState = "idle" | "recording" | "analyzing" | "results";
+export type RecordingState = "idle" | "connecting" | "recording" | "analyzing" | "results";
 
 interface AnalysisResult {
   scores: SpeechScores;
@@ -56,6 +56,7 @@ export function SpeechRecorder({
   const {
     transcript,
     interimTranscript,
+    isListening,
     browserSupported,
     mounted,
     startListening,
@@ -150,10 +151,17 @@ export function SpeechRecorder({
   const handleStart = useCallback(async () => {
     setAnalysisError(null);
     resetTranscript();
+    onStateChange("connecting");
     await startRecording();
     startListening();
-    onStateChange("recording");
   }, [startRecording, startListening, resetTranscript, onStateChange]);
+
+  // Transition from "connecting" to "recording" once speech recognition is active
+  useEffect(() => {
+    if (state === "connecting" && isListening) {
+      onStateChange("recording");
+    }
+  }, [state, isListening, onStateChange]);
 
   const handleStop = useCallback(() => {
     console.log("[SpeechRecorder] Stop pressed, transcript so far:", transcriptRef.current?.slice(0, 50));
@@ -205,7 +213,7 @@ export function SpeechRecorder({
       {/* Waveform */}
       <WaveformVisualizer
         analyserNode={analyserNode}
-        isActive={state === "recording"}
+        isActive={state === "connecting" || state === "recording"}
       />
 
       {/* Live Transcript */}
@@ -226,6 +234,17 @@ export function SpeechRecorder({
             <Mic className="h-5 w-5" />
             Start Recording
           </Button>
+        )}
+
+        {state === "connecting" && (
+          <div className="flex flex-col items-center gap-2">
+            <div className="flex items-center gap-3 rounded-xl bg-amber-50 px-6 py-3 border border-amber-200">
+              <Loader2 className="h-5 w-5 animate-spin text-amber-600" />
+              <span className="text-sm font-medium text-amber-700">
+                Connecting microphone...
+              </span>
+            </div>
+          </div>
         )}
 
         {state === "recording" && (
