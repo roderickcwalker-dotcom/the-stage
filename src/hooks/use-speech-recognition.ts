@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useState, useEffect } from "react";
 import SpeechRecognition, {
   useSpeechRecognition as useReactSpeechRecognition,
 } from "react-speech-recognition";
@@ -10,12 +10,19 @@ interface UseSpeechRecognitionReturn {
   interimTranscript: string;
   isListening: boolean;
   browserSupported: boolean;
+  mounted: boolean;
   startListening: () => void;
   stopListening: () => void;
   resetTranscript: () => void;
 }
 
 export function useSpeechRecognition(): UseSpeechRecognitionReturn {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const {
     transcript,
     interimTranscript,
@@ -37,6 +44,7 @@ export function useSpeechRecognition(): UseSpeechRecognitionReturn {
     interimTranscript,
     isListening: listening,
     browserSupported: browserSupportsSpeechRecognition,
+    mounted,
     startListening,
     stopListening,
     resetTranscript,

@@ -57,6 +57,7 @@ export function SpeechRecorder({
     transcript,
     interimTranscript,
     browserSupported,
+    mounted,
     startListening,
     stopListening,
     resetTranscript,
@@ -169,6 +170,17 @@ export function SpeechRecorder({
       runAnalysis(finalTranscript, finalDuration, finalBlob);
     }, 1000);
   }, [stopRecording, stopListening, onStateChange, runAnalysis]);
+
+  // Don't render browser-dependent UI until mounted to avoid hydration mismatch
+  if (!mounted) {
+    return (
+      <div className="space-y-4">
+        <div className="card-soft rounded-2xl bg-white p-8 text-center">
+          <Loader2 className="mx-auto h-6 w-6 animate-spin text-[var(--color-stage-text-secondary)]" />
+        </div>
+      </div>
+    );
+  }
 
   if (!browserSupported) {
     return (

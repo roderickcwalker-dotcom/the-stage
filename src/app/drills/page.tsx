@@ -47,6 +47,7 @@ export default function DrillsPage() {
     stopListening,
     resetTranscript,
     browserSupported,
+    mounted,
   } = useSpeechRecognition();
 
   const drillDuration = selectedType ? getDrillDuration(selectedType) : 60;
@@ -220,11 +221,11 @@ export default function DrillsPage() {
                   onClick={handleStartDrill}
                   size="lg"
                   className="gap-2 rounded-xl bg-[var(--color-stage-primary)] px-10 py-6 text-base hover:bg-[var(--color-stage-dim)]"
-                  disabled={!browserSupported}
+                  disabled={mounted && !browserSupported}
                 >
                   Go!
                 </Button>
-                {!browserSupported && (
+                {mounted && !browserSupported && (
                   <p className="mt-2 text-xs text-red-500">
                     Speech recognition requires Chrome or Edge
                   </p>
