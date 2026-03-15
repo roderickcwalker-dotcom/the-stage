@@ -26,6 +26,16 @@ interface AnalysisResponse {
   strength: string;
 }
 
+function extractJSON(text: string): string {
+  // Strip ```json ... ``` or ``` ... ```
+  const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (fenceMatch) return fenceMatch[1].trim();
+  // Try to find raw JSON object
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (jsonMatch) return jsonMatch[0];
+  return text;
+}
+
 function buildAnalysisPrompt(input: AnalysisInput): string {
   return `You are a world-class speaking coach analyzing a speech transcript. Be specific, actionable, and honest.
 
@@ -75,7 +85,7 @@ export async function analyzeSpeech(
     response.content[0].type === "text" ? response.content[0].text : "";
 
   try {
-    const parsed: AnalysisResponse = JSON.parse(text);
+    const parsed: AnalysisResponse = JSON.parse(extractJSON(text));
     return {
       scores: parsed.scores,
       feedback: {
@@ -143,7 +153,7 @@ Return ONLY valid JSON: {"topic": "<the topic>", "context": "<brief context or s
   const text =
     response.content[0].type === "text" ? response.content[0].text : "";
   try {
-    return JSON.parse(text);
+    return JSON.parse(extractJSON(text));
   } catch {
     return {
       topic: "The most important lesson you've learned this year",
@@ -218,7 +228,7 @@ Return ONLY valid JSON: {"score": <1-10>, "feedback": "<one sentence>"}`,
   const text =
     response.content[0].type === "text" ? response.content[0].text : "";
   try {
-    return JSON.parse(text);
+    return JSON.parse(extractJSON(text));
   } catch {
     return { score: 5, feedback: "Keep practicing — consistency is key." };
   }
